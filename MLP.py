@@ -36,7 +36,7 @@ class MLPModel(nn.Module):
 
 
 
-
+# cross validation to learn the number of iterations
 def cv_learn(n_splits, X, y, n_hiddens, layer_size, batch_size, n_ite):
     torch.manual_seed(123)
     
