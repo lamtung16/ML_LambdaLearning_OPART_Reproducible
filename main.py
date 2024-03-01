@@ -91,10 +91,10 @@ def gen_mlp_lldas(features_df, target_df, hidden_layers, hidden_size, batch_size
     targets = torch.cat((targets_low, targets_high), dim=1)
 
     # learn best number of iterations
-    n_ites = cv_learn(2, X, targets, hidden_layers, hidden_size, batch_size, 500)
+    n_ite = cv_learn(2, X, targets, hidden_layers, hidden_size, batch_size, 100)
 
     # train model to get lldas
-    lldas = mlp(X, targets, hidden_layers, hidden_size, batch_size, n_ites + 1)
+    lldas = mlp(X, targets, hidden_layers, hidden_size, batch_size, n_ite + 1)
     return lldas
 
 
@@ -120,8 +120,6 @@ if __name__ == "__main__":
     # getting results
     methods = ['BIC.1', 'linear.2', 'linear.6', 'mlp']
     for method in methods:
-        lldas_train_fold1 = np.zeros(len(seqs_dict))
-        lldas_train_fold2 = np.zeros(len(seqs_dict))
         if(method == 'BIC.1'):
             lldas_train_fold1 = gen_BIC_lldas(features_df_fold1)
             lldas_train_fold2 = gen_BIC_lldas(features_df_fold2)

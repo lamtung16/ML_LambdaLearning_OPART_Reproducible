@@ -5,11 +5,12 @@ import numpy as np
 from opart_functions import tune_lldas, SquaredHingeLoss
 from torch.utils.data import DataLoader, TensorDataset
 
-
+torch.manual_seed(123)
+np.random.seed(123)
 
 # Define the linear model
 class LinearModel(nn.Module):
-    torch.manual_seed(123)
+
     def __init__(self, input_size=1):
         super(LinearModel, self).__init__()
         self.linear = nn.Linear(input_size, 1)
@@ -19,8 +20,8 @@ class LinearModel(nn.Module):
 
 
 # learn lldas
-def linear(feature, targets, n_ites=250):
-    torch.manual_seed(123)
+def linear(feature, targets, n_ites=300):
+
     # prepare training dataset
     dataset    = TensorDataset(feature, targets)
     dataloader = DataLoader(dataset, batch_size=1, shuffle=True)

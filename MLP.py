@@ -6,11 +6,12 @@ from sklearn.model_selection import KFold
 from opart_functions import tune_lldas, SquaredHingeLoss
 from torch.utils.data import DataLoader, TensorDataset
 
-
+torch.manual_seed(123)
+np.random.seed(123)
 
 # Define the MLP model
 class MLPModel(nn.Module):
-    torch.manual_seed(123)
+
     def __init__(self, input_size, hidden_layers, hidden_size):
         super(MLPModel, self).__init__()
         self.input_size    = input_size
@@ -38,7 +39,6 @@ class MLPModel(nn.Module):
 
 # cross validation to learn the number of iterations
 def cv_learn(n_splits, X, y, n_hiddens, layer_size, batch_size, n_ite):
-    torch.manual_seed(123)
     
     # Define the number of folds for cross-validation
     kf = KFold(n_splits, shuffle=True, random_state=123)
@@ -66,8 +66,8 @@ def cv_learn(n_splits, X, y, n_hiddens, layer_size, batch_size, n_ite):
         optimizer = optim.Adam(model.parameters())
 
         # Training loop for the specified number of iterations
-        train_losses = []
-        val_losses   = []
+        train_losses = np.zeros(n_ite)
+        val_losses   = np.zeros(n_ite)
         for i in range(n_ite):
             # training
             train_loss = 0
@@ -84,8 +84,8 @@ def cv_learn(n_splits, X, y, n_hiddens, layer_size, batch_size, n_ite):
                 val_loss = loss_func(model(X_val), y_val)
 
             # add train_loss and val_loss into arrays
-            train_losses.append(train_loss/len(dataloader))
-            val_losses.append(val_loss.item())
+            train_losses[i] = train_loss/len(dataloader)
+            val_losses[i] = val_loss.item()
 
         total_train_losses += train_losses
         total_val_losses += val_losses
@@ -96,8 +96,8 @@ def cv_learn(n_splits, X, y, n_hiddens, layer_size, batch_size, n_ite):
 
 
 # learn lldas
-def mlp(features, targets, hidden_layers, hidden_size, batch_size, n_ites):
-    torch.manual_seed(123)
+def mlp(features, targets, hidden_layers, hidden_size, batch_size, n_ite):
+
     # prepare training dataset
     dataset    = TensorDataset(features, targets)
     dataloader = DataLoader(dataset, batch_size, shuffle=True)
@@ -108,7 +108,7 @@ def mlp(features, targets, hidden_layers, hidden_size, batch_size, n_ites):
     optimizer = optim.Adam(model.parameters())
 
     # Training loop
-    for _ in range(n_ites + 1):
+    for _ in range(n_ite + 1):
         for inputs, labels in dataloader:
             optimizer.zero_grad()
             outputs = model(inputs)
