@@ -92,7 +92,6 @@ def gen_mlp_lldas(features_df, target_df, hidden_layers, hidden_size, batch_size
 
     # learn best number of iterations
     n_ites = cv_learn(2, X, targets, hidden_layers, hidden_size, batch_size, 50)
-    print(n_ites)
 
     # train model to get lldas
     lldas = mlp(X, targets, hidden_layers, hidden_size, batch_size, n_ites + 1)
