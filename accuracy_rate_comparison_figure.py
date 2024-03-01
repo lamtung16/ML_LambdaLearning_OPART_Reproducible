@@ -1,4 +1,4 @@
-from plotnine import ggplot, aes, geom_point, labs, facet_wrap, geom_vline, theme_minimal, theme, element_text, scale_shape_manual
+from plotnine import ggplot, aes, geom_point, labs, facet_wrap, geom_vline, theme_minimal, theme, element_text
 import pandas as pd
 
 
@@ -54,3 +54,4 @@ if __name__ == "__main__":
     df = pd.read_csv(acc_rate_csv_path)
     plot_combined = acc_plot(df)
     plot_combined.save(figures_path + '/' + dataset_name + "_AccRateComparison" + ".pdf")
+    plot_combined.save(figures_path + '/' + dataset_name + "_AccRateComparison" + ".png")
