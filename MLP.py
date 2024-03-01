@@ -38,6 +38,7 @@ class MLPModel(nn.Module):
 
 
 # cross validation to learn the number of iterations
+# NEED TO REVIEW THIS PART
 def cv_learn(n_splits, X, y, n_hiddens, layer_size, batch_size, n_ite):
     
     # Define the number of folds for cross-validation
