@@ -91,7 +91,7 @@ def gen_mlp_lldas(features_df, target_df, hidden_layers, hidden_size, batch_size
     targets = torch.cat((targets_low, targets_high), dim=1)
 
     # learn best number of iterations
-    n_ites = cv_learn(2, X, targets, hidden_layers, hidden_size, batch_size, 50)
+    n_ites = cv_learn(2, X, targets, hidden_layers, hidden_size, batch_size, 500)
 
     # train model to get lldas
     lldas = mlp(X, targets, hidden_layers, hidden_size, batch_size, n_ites + 1)
