@@ -1,19 +1,24 @@
 import torch
 import torch.nn as nn
+import torch.nn.init as init
 import torch.optim as optim
 import numpy as np
 from opart_functions import tune_lldas, SquaredHingeLoss
 from torch.utils.data import DataLoader, TensorDataset
 
-torch.manual_seed(123)
-np.random.seed(123)
+
 
 # Define the linear model
 class LinearModel(nn.Module):
-
     def __init__(self, input_size=1):
         super(LinearModel, self).__init__()
         self.linear = nn.Linear(input_size, 1)
+        self.initialize_parameters()
+
+    def initialize_parameters(self):
+        for param in self.parameters():
+            init.constant_(param, 0)
+
     def forward(self, x):
         return self.linear(x)
 
@@ -24,7 +29,7 @@ def linear(feature, targets, n_ites=300):
 
     # prepare training dataset
     dataset    = TensorDataset(feature, targets)
-    dataloader = DataLoader(dataset, batch_size=1, shuffle=True)
+    dataloader = DataLoader(dataset, batch_size=1, shuffle=False)
 
     # Instantiate model, loss function and opimizer
     model = LinearModel()
