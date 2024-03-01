@@ -38,7 +38,6 @@ class MLPModel(nn.Module):
 
 
 # cross validation to learn the number of iterations
-# NEED TO REVIEW THIS PART
 def cv_learn(n_splits, X, y, n_hiddens, layer_size, batch_size, n_ite):
     
     # Define the K-fold cross-validation
@@ -72,13 +71,11 @@ def cv_learn(n_splits, X, y, n_hiddens, layer_size, batch_size, n_ite):
         # Training loop for the specified number of iterations
         for i in range(n_ite):
             # training
-            subtrain_loss = 0
             for inputs, labels in dataloader:
                 optimizer.zero_grad()
                 loss = loss_func(model(inputs), labels)
                 loss.backward()
                 optimizer.step()
-                subtrain_loss += loss.item()
 
             # validating
             model.eval()
@@ -86,7 +83,6 @@ def cv_learn(n_splits, X, y, n_hiddens, layer_size, batch_size, n_ite):
                 val_loss = loss_func(model(data_splits['X_val'][-1]), data_splits['y_val'][-1])
 
             # add train_loss and val_loss into arrays
-            total_losses['subtrain'][i] += subtrain_loss/len(dataloader)
             total_losses['val'][i] += val_loss.item()
 
     best_no_ite = np.argmin(total_losses['val'])

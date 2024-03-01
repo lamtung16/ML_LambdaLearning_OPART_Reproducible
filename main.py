@@ -69,7 +69,7 @@ def gen_linear_lldas(features_df, target_df):
 
 
 
-# NEED TO REVIEW THIS PART
+
 def gen_mlp_lldas(features_df, target_df, hidden_layers, hidden_size, batch_size):
     # features
     chosen_feature = ['std_deviation', 'length', 'sum_diff', 'range_value', 'abs_skewness']
