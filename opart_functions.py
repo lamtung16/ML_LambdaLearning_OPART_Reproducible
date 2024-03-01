@@ -108,8 +108,7 @@ class SquaredHingeLoss(nn.Module):
 
     def forward(self, predicted, y):
         low, high = y[:, 0], y[:, 1]
-        margin = self.margin
-        loss_low = torch.relu(low - predicted + margin)
-        loss_high = torch.relu(predicted - high + margin)
+        loss_low = torch.relu(low - predicted + self.margin)
+        loss_high = torch.relu(predicted - high + self.margin)
         loss = loss_low + loss_high
         return torch.mean(torch.square(loss))
