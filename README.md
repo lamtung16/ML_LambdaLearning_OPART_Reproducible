@@ -19,3 +19,4 @@
 - Accuracy Rate Comparison figure:
   - Run `main.py` to generate a CSV file containing accuracy rates for each method. Add new methods if necessary.
   - Execute `accuracy_rate_comparison_figure.py`. The resulting figure will be generated in the `figures` folder.
+    ![Plot](figures/genome/genome_AccRateComparison.jpg)
