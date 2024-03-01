@@ -89,6 +89,17 @@ def get_err_df(lldas_train, test_fold, seqs_dict, labels_dict, err_df):
 
 
 
+# tuning lldas
+def tune_lldas(lldas):
+    lldas = np.round(lldas*2)/2
+    lldas[lldas > 5.0] = 5.0
+    lldas[lldas < -5.0] = -5.0
+    lldas[np.isclose(lldas, -0.0)] = 0.0
+    lldas[np.isnan(lldas)] = 0.0
+    return lldas
+
+
+
 # Hinged Square Loss
 class SquaredHingeLoss(nn.Module):
     def __init__(self, margin=1):

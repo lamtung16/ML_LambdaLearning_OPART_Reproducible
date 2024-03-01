@@ -2,24 +2,14 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
-from opart_functions import SquaredHingeLoss
+from opart_functions import tune_lldas, SquaredHingeLoss
 from torch.utils.data import DataLoader, TensorDataset
-
-torch.manual_seed(123)
-
-
-# tuning lldas
-def tune_lldas(lldas):
-    lldas = np.round(lldas*2)/2
-    lldas[lldas > 5.0] = 5.0
-    lldas[lldas < -5.0] = -5.0
-    lldas[np.isclose(lldas, -0.0)] = 0.0
-    return lldas
 
 
 
 # Define the linear model
 class LinearModel(nn.Module):
+    torch.manual_seed(123)
     def __init__(self, input_size=1):
         super(LinearModel, self).__init__()
         self.linear = nn.Linear(input_size, 1)
@@ -29,7 +19,8 @@ class LinearModel(nn.Module):
 
 
 # learn lldas
-def linear(feature, targets, n_ites=1):
+def linear(feature, targets, n_ites=250):
+    torch.manual_seed(123)
     # prepare training dataset
     dataset    = TensorDataset(feature, targets)
     dataloader = DataLoader(dataset, batch_size=1, shuffle=True)
@@ -37,7 +28,7 @@ def linear(feature, targets, n_ites=1):
     # Instantiate model, loss function and opimizer
     model = LinearModel()
     criterion = SquaredHingeLoss()
-    optimizer = optim.Adam(model.parameters(), 0.001)
+    optimizer = optim.Adam(model.parameters())
 
     # Training loop
     for _ in range(n_ites):
