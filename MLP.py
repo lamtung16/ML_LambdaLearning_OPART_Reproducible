@@ -26,7 +26,7 @@ class MLPModel(nn.Module):
 
     def initialize_parameters(self):
         for param in self.parameters():
-            init.constant_(param, 0.1)
+            init.constant_(param, 0.5)
 
     def forward(self, x):
         if self.hidden_layers == 0:
@@ -106,7 +106,7 @@ def mlp(features, targets, hidden_layers, hidden_size, batch_size, n_ite):
     optimizer = optim.Adam(model.parameters())
 
     # Training loop
-    for _ in range(n_ite + 1):
+    for _ in range(n_ite):
         for inputs, labels in dataloader:
             optimizer.zero_grad()
             outputs = model(inputs)

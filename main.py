@@ -75,7 +75,7 @@ def gen_linear_lldas(features_df, target_df):
 
 
 
-def gen_mlp_lldas(features_df, target_df, hidden_layers, hidden_size, batch_size):
+def gen_mlp_lldas(features_df, target_df, hidden_layers, hidden_size, batch_size, max_ite):
     # features
     chosen_feature = ['std_deviation', 'length', 'sum_diff', 'range_value', 'abs_skewness']
     X = features_df.iloc[:, 1:][chosen_feature].to_numpy()
@@ -95,7 +95,7 @@ def gen_mlp_lldas(features_df, target_df, hidden_layers, hidden_size, batch_size
     targets = gen_target_from_df(target_df)
 
     # learn best number of iterations
-    n_ite = cv_learn(2, X, targets, hidden_layers, hidden_size, batch_size, 40)
+    n_ite = cv_learn(2, X, targets, hidden_layers, hidden_size, batch_size, max_ite)
 
     # train model to get lldas
     lldas = mlp(X, targets, hidden_layers, hidden_size, batch_size, n_ite+1)
@@ -122,7 +122,7 @@ if __name__ == "__main__":
 
 
     # getting results
-    methods = ['BIC.1', 'linear.2', 'linear.6', 'mlp']
+    methods = ['BIC.1', 'linear.2', 'linear.6', 'mlp.1.8', 'mlp.2.16']
     for method in methods:
         if(method == 'BIC.1'):
             lldas_train_fold1 = delayed(gen_BIC_lldas)(features_df_fold1)
@@ -131,12 +131,15 @@ if __name__ == "__main__":
             lldas_train_fold1 = delayed(gen_linear_lldas)(features_df_fold1, target_df_fold1)
             lldas_train_fold2 = delayed(gen_linear_lldas)(features_df_fold2, target_df_fold2)
         elif(method == 'linear.6'):
-            lldas_train_fold1 = delayed(gen_mlp_lldas)(features_df_fold1, target_df_fold1, 0, 0, 1)
-            lldas_train_fold2 = delayed(gen_mlp_lldas)(features_df_fold2, target_df_fold2, 0, 0, 1)
-        elif(method == 'mlp'):
-            lldas_train_fold1 = delayed(gen_mlp_lldas)(features_df_fold1, target_df_fold1, 2, 16, 1)
-            lldas_train_fold2 = delayed(gen_mlp_lldas)(features_df_fold2, target_df_fold2, 2, 16, 1)
-
+            lldas_train_fold1 = delayed(gen_mlp_lldas)(features_df_fold1, target_df_fold1, 0, 0, 1, 2)
+            lldas_train_fold2 = delayed(gen_mlp_lldas)(features_df_fold2, target_df_fold2, 0, 0, 1, 2)
+        elif(method == 'mlp.1.8'):
+            lldas_train_fold1 = delayed(gen_mlp_lldas)(features_df_fold1, target_df_fold1, 1, 8, 1, 14)
+            lldas_train_fold2 = delayed(gen_mlp_lldas)(features_df_fold2, target_df_fold2, 1, 8, 1, 14)
+        elif(method == 'mlp.2.16'):
+            lldas_train_fold1 = delayed(gen_mlp_lldas)(features_df_fold1, target_df_fold1, 2, 16, 1, 35)
+            lldas_train_fold2 = delayed(gen_mlp_lldas)(features_df_fold2, target_df_fold2, 2, 16, 1, 35)
+        
         lldas_train_fold1, lldas_train_fold2 = Parallel(n_jobs=2)([lldas_train_fold1, lldas_train_fold2])
         df_fold1 = get_err_df(lldas_train_fold2, 1, seqs_dict, labels_dict, err_fold1_df)
         df_fold2 = get_err_df(lldas_train_fold1, 2, seqs_dict, labels_dict, err_fold2_df)
