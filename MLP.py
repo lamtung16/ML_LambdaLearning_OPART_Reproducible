@@ -48,19 +48,19 @@ def cv_learn(n_splits, X, y, n_hiddens, layer_size, batch_size, n_ite):
     loss_func = SquaredHingeLoss()
 
     # learn best ite
-    total_losses = {'train': np.zeros(n_ite), 'val': np.zeros(n_ite)}
-    data_splits = {'X_train': [], 'X_val': [], 'y_train': [], 'y_val': []}
+    total_losses = {'subtrain': np.zeros(n_ite), 'val': np.zeros(n_ite)}
+    data_splits = {'X_subtrain': [], 'X_val': [], 'y_subtrain': [], 'y_val': []}
     
     for subtrain_idx, val_idx in kf.split(X):
 
         # Split the data into training and validation sets
-        data_splits['X_train'].append(X[subtrain_idx])
-        data_splits['X_val'].append(X[val_idx])
-        data_splits['y_train'].append(y[subtrain_idx])
-        data_splits['y_val'].append(y[val_idx])
+        indices = {'subtrain': subtrain_idx, 'val': val_idx}
+        for key in data_splits.keys():
+            feature_target, set_type = key.split('_')       # (X or y) and (subtrain or val)
+            data_splits[key].append(X[indices[set_type]] if feature_target == 'X' else y[indices[set_type]])
 
         # Create DataLoader
-        dataset    = TensorDataset(data_splits['X_train'], data_splits['y_train'])
+        dataset    = TensorDataset(data_splits['X_subtrain'][-1], data_splits['y_subtrain'][-1])
         dataloader = DataLoader(dataset, batch_size, shuffle=True)
 
         # Define your model
@@ -72,21 +72,21 @@ def cv_learn(n_splits, X, y, n_hiddens, layer_size, batch_size, n_ite):
         # Training loop for the specified number of iterations
         for i in range(n_ite):
             # training
-            train_loss = 0
+            subtrain_loss = 0
             for inputs, labels in dataloader:
                 optimizer.zero_grad()
                 loss = loss_func(model(inputs), labels)
                 loss.backward()
                 optimizer.step()
-                train_loss += loss.item()
+                subtrain_loss += loss.item()
 
             # validating
             model.eval()
             with torch.no_grad():
-                val_loss = loss_func(model(data_splits['X_val']), data_splits['y_val'])
+                val_loss = loss_func(model(data_splits['X_val'][-1]), data_splits['y_val'][-1])
 
             # add train_loss and val_loss into arrays
-            total_losses['train'][i] += train_loss/len(dataloader)
+            total_losses['subtrain'][i] += subtrain_loss/len(dataloader)
             total_losses['val'][i] += val_loss.item()
 
     best_no_ite = np.argmin(total_losses['val'])
