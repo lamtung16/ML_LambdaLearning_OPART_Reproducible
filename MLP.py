@@ -40,23 +40,26 @@ class MLPModel(nn.Module):
 # cross validation to learn the number of iterations
 def cv_learn(n_splits, X, y, n_hiddens, layer_size, batch_size, n_ite):
     
-    # Define the number of folds for cross-validation
+    # Define the K-fold cross-validation
     kf = KFold(n_splits, shuffle=True, random_state=123)
 
     # loss function
-    loss_func = SquaredHingeLoss(margin=1)
+    loss_func = SquaredHingeLoss()
 
     # learn best ite
-    total_train_losses = np.zeros(n_ite)
-    total_val_losses   = np.zeros(n_ite)
-    for train_index, val_index in kf.split(X):
+    total_losses = {'subtrain': np.zeros(n_ite), 'val': np.zeros(n_ite)}
+    data_splits = {'X_subtrain': [], 'X_val': [], 'y_subtrain': [], 'y_val': []}
+    
+    for subtrain_idx, val_idx in kf.split(X):
 
         # Split the data into training and validation sets
-        X_train, X_val = X[train_index], X[val_index]
-        y_train, y_val = y[train_index], y[val_index]
+        indices = {'subtrain': subtrain_idx, 'val': val_idx}
+        for key in data_splits.keys():
+            feature_target, set_type = key.split('_')       # (X or y) and (subtrain or val)
+            data_splits[key].append(X[indices[set_type]] if feature_target == 'X' else y[indices[set_type]])
 
         # Create DataLoader
-        dataset    = TensorDataset(X_train, y_train)
+        dataset    = TensorDataset(data_splits['X_subtrain'][-1], data_splits['y_subtrain'][-1])
         dataloader = DataLoader(dataset, batch_size, shuffle=True)
 
         # Define your model
@@ -66,31 +69,23 @@ def cv_learn(n_splits, X, y, n_hiddens, layer_size, batch_size, n_ite):
         optimizer = optim.Adam(model.parameters())
 
         # Training loop for the specified number of iterations
-        train_losses = np.zeros(n_ite)
-        val_losses   = np.zeros(n_ite)
         for i in range(n_ite):
             # training
-            train_loss = 0
             for inputs, labels in dataloader:
                 optimizer.zero_grad()
                 loss = loss_func(model(inputs), labels)
                 loss.backward()
                 optimizer.step()
-                train_loss += loss.item()
 
             # validating
             model.eval()
             with torch.no_grad():
-                val_loss = loss_func(model(X_val), y_val)
+                val_loss = loss_func(model(data_splits['X_val'][-1]), data_splits['y_val'][-1])
 
             # add train_loss and val_loss into arrays
-            train_losses[i] = train_loss/len(dataloader)
-            val_losses[i] = val_loss.item()
+            total_losses['val'][i] += val_loss.item()
 
-        total_train_losses += train_losses
-        total_val_losses += val_losses
-
-    best_no_ite = np.argmin(total_val_losses)
+    best_no_ite = np.argmin(total_losses['val'])
     return best_no_ite + 1
 
 
