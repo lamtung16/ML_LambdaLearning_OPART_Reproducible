@@ -35,7 +35,7 @@ def acc_plot(df):
 
     # Plotting with different shapes for each algorithm
     plot_combined = (ggplot(data, aes(x='Accuracy', y='Method')) +
-                    geom_point(size=1) +
+                    geom_point(shape="D", size=2) +
                     labs(title="",
                         x="Accuracy Percentage",
                         y="Method") +
