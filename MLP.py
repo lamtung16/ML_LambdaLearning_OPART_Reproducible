@@ -26,7 +26,7 @@ class MLPModel(nn.Module):
 
     def initialize_parameters(self):
         for param in self.parameters():
-            init.constant_(param, 0.5)
+            init.normal_(param, mean=0, std=2)
 
     def forward(self, x):
         if self.hidden_layers == 0:

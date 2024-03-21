@@ -77,15 +77,14 @@ def gen_linear_lldas(features_df, target_df):
 
 def gen_mlp_lldas(features_df, target_df, hidden_layers, hidden_size, batch_size, max_ite):
     # features
-    chosen_feature = ['std_deviation', 'length', 'sum_diff', 'range_value', 'abs_skewness']
+    chosen_feature = ['std_deviation', 'length', 'sum_diff', 'range_value']
     X = features_df.iloc[:, 1:][chosen_feature].to_numpy()
     X0 = np.log(X[:, 0]).reshape(-1, 1)
     X1 = np.log(np.log(X[:, 1])).reshape(-1, 1)
     X2 = np.log(np.log(X[:, 2])).reshape(-1, 1)
     X3 = np.log(X[:, 3]).reshape(-1, 1)
-    X4 = np.log(X[:, 4]).reshape(-1, 1)
 
-    X = np.concatenate([X0, X1, X2, X3, X4], axis=1)
+    X = np.concatenate([X0, X1, X2, X3], axis=1)
     mean = np.mean(X, axis=0)
     std_dev = np.std(X, axis=0)
     X = (X-mean)/std_dev
@@ -122,25 +121,31 @@ if __name__ == "__main__":
 
 
     # getting results
-    methods = ['BIC.1', 'linear.2', 'linear.6', 'mlp.1.8', 'mlp.2.16']
+    methods = ['BIC.1', 'linear.1', 'linear.4', 'mlp.4.1.8', 'mlp.4.2.16', 'mlp.4.3.32', 'mlp.4.4.64']
     for method in methods:
         if(method == 'BIC.1'):
             lldas_train_fold1 = delayed(gen_BIC_lldas)(features_df_fold1)
             lldas_train_fold2 = delayed(gen_BIC_lldas)(features_df_fold2)
-        elif(method == 'linear.2'):
+        elif(method == 'linear.1'):
             lldas_train_fold1 = delayed(gen_linear_lldas)(features_df_fold1, target_df_fold1)
             lldas_train_fold2 = delayed(gen_linear_lldas)(features_df_fold2, target_df_fold2)
-        elif(method == 'linear.6'):
-            lldas_train_fold1 = delayed(gen_mlp_lldas)(features_df_fold1, target_df_fold1, 0, 0, 1, 2)
-            lldas_train_fold2 = delayed(gen_mlp_lldas)(features_df_fold2, target_df_fold2, 0, 0, 1, 2)
-        elif(method == 'mlp.1.8'):
-            lldas_train_fold1 = delayed(gen_mlp_lldas)(features_df_fold1, target_df_fold1, 1, 8, 1, 14)
-            lldas_train_fold2 = delayed(gen_mlp_lldas)(features_df_fold2, target_df_fold2, 1, 8, 1, 14)
-        elif(method == 'mlp.2.16'):
-            lldas_train_fold1 = delayed(gen_mlp_lldas)(features_df_fold1, target_df_fold1, 2, 16, 1, 35)
-            lldas_train_fold2 = delayed(gen_mlp_lldas)(features_df_fold2, target_df_fold2, 2, 16, 1, 35)
+        elif(method == 'linear.4'):
+            lldas_train_fold1 = delayed(gen_mlp_lldas)(features_df_fold1, target_df_fold1, 0, 0, 1000, 10000)
+            lldas_train_fold2 = delayed(gen_mlp_lldas)(features_df_fold2, target_df_fold2, 0, 0, 1000, 10000)
+        elif(method == 'mlp.4.1.8'):
+            lldas_train_fold1 = delayed(gen_mlp_lldas)(features_df_fold1, target_df_fold1, 1, 8, 1000, 10000)
+            lldas_train_fold2 = delayed(gen_mlp_lldas)(features_df_fold2, target_df_fold2, 1, 8, 1000, 10000)
+        elif(method == 'mlp.4.2.16'):
+            lldas_train_fold1 = delayed(gen_mlp_lldas)(features_df_fold1, target_df_fold1, 2, 16, 1000, 10000)
+            lldas_train_fold2 = delayed(gen_mlp_lldas)(features_df_fold2, target_df_fold2, 2, 16, 1000, 10000)
+        elif(method == 'mlp.4.3.32'):
+            lldas_train_fold1 = delayed(gen_mlp_lldas)(features_df_fold1, target_df_fold1, 3, 32, 1000, 10000)
+            lldas_train_fold2 = delayed(gen_mlp_lldas)(features_df_fold2, target_df_fold2, 3, 32, 1000, 10000)
+        elif(method == 'mlp.4.4.64'):
+            lldas_train_fold1 = delayed(gen_mlp_lldas)(features_df_fold1, target_df_fold1, 4, 64, 1000, 10000)
+            lldas_train_fold2 = delayed(gen_mlp_lldas)(features_df_fold2, target_df_fold2, 4, 64, 1000, 10000)
         
         lldas_train_fold1, lldas_train_fold2 = Parallel(n_jobs=2)([lldas_train_fold1, lldas_train_fold2])
-        df_fold1 = get_err_df(lldas_train_fold2, 1, seqs_dict, labels_dict, err_fold1_df)
-        df_fold2 = get_err_df(lldas_train_fold1, 2, seqs_dict, labels_dict, err_fold2_df)
+        df_fold1 = get_err_df(lldas_train_fold1, 1, seqs_dict, labels_dict, err_fold1_df)
+        df_fold2 = get_err_df(lldas_train_fold2, 2, seqs_dict, labels_dict, err_fold2_df)
         record(method, df_fold1, df_fold2, output_df_path, acc_rate_path)
